@@ -1,20 +1,18 @@
 var express = require('express');
 var router = express.Router();
-//var data = require('../data/test.json');
 
 router.get('/', function(req, res, next) {
   var title = "Our Users Page";
   var db = req.db;
   var collection = db.get('test_collection');
   collection.find({},{limit:20},function(e,docs){
+      console.log(docs);
       res.render('users/index', {
           title:title,
           users:docs
       });
   });
 });
-
-//show the individual user page
 
 router.get('/view/:id', function(req, res, next) {
   var title = "User Page";
@@ -29,7 +27,7 @@ router.get('/view/:id', function(req, res, next) {
   });
 });
 
-//form to add user 
+/* add user form */
 router.get('/add', function(req, res, next) {
   var title = "Add User";
       res.render('users/add', {
@@ -69,6 +67,5 @@ router.post('/insert', function(req, res) {
      res.send("ERROR: User not added.");
   }).then(() => db.close())
 });
-
 
 module.exports = router;
