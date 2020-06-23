@@ -4,10 +4,58 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+
+let credentials = require('./credentials');//store mongodb credentials in separate, non-tracked file
+var db_admin = credentials.getCredentials();
+//console.log(db_admin);
+
+var MongoClient = require('mongodb').MongoClient;
+
+//monk will be our db connection tool
+var monk = require('monk');
+//connection to Atlas 
+var uri = "mongodb+srv://" + db_admin.username + ":" + db_admin.password + "@cluster0-i3nnd.gcp.mongodb.net/test_db?retryWrites=true&w=majority";
+var db = monk(uri);
+
+db.then(()=>{
+  console.log('Connected to server');
+});
+
+
+const collection = db.get('test_collection');
+
+collection.find({}, function(err, docs){
+    if(err){
+      console.log(err);
+    }else{
+	console.log(docs);
+    }
+});
+
+
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var app = express();
+
+// Make our db accessible to routers
+app.use(function(req,res,next){
+ req.db = db;
+ next();
+});
+
+
+
+app.get('/collections/:name',function(req,res){
+  var collection = db.get(req.params.name);
+  collection.find({},{limit:20},function(e,docs){
+    res.json(docs);
+  })
+});
+
+
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
